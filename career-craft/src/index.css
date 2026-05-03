@@ -122,7 +122,7 @@
 /* Quiz option styles */
 .quiz-option {
   @apply relative flex items-center gap-4 p-4 rounded-xl border-2 border-ink-200 cursor-pointer
-         hover:border-ember-400 hover:bg-ember-50 transition-all duration-200 group;
+         hover:border-ember-400 hover:bg-ember-50 transition-all duration-200;
 }
 
 .quiz-option.selected {

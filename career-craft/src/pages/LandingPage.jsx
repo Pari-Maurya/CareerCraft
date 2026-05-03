@@ -260,7 +260,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-ink-800 text-center text-xs text-ink-600">
-            © {new Date().getFullYear()} CareerCraft. Built with ❤️ for students everywhere.
+            © {new Date().getFullYear()} CareerCraft. Built with ❤️ by Pari Maurya.
           </div>
         </div>
       </footer>

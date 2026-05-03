@@ -189,7 +189,7 @@ const QuizPage = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.06 }}
-                            className={`quiz-option ${selected ? 'selected' : ''}`}
+                            className={`quiz-option group ${selected ? 'selected' : ''}`}
                             onClick={() => selectAnswer(currentQuestion.id, option.value)}
                           >
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors duration-200 ${
