@@ -69,7 +69,20 @@ const SkillTracker = ({ category, careers = [] }) => {
 
     // Combine standard matched goals and custom roadmap goals
     const all = [...matchedStandard, ...roadmapGoals]
-    return all.length > 0 ? all : skillGoals
+
+    // Deduplicate goals by normalized name/title
+    const uniqueGoals = []
+    const seenNames = new Set()
+
+    for (const goal of all) {
+      const normalizedName = (goal.name || '').toLowerCase().trim()
+      if (!seenNames.has(normalizedName)) {
+        seenNames.add(normalizedName)
+        uniqueGoals.push(goal)
+      }
+    }
+
+    return uniqueGoals.length > 0 ? uniqueGoals : skillGoals
   }, [category, careers, savedRoadmaps])
 
   // Auto-select first matched goal if current selection is invalid
@@ -133,18 +146,16 @@ const SkillTracker = ({ category, careers = [] }) => {
             <button
               key={goal.id}
               onClick={() => handleGoalChange(goal.id)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isSelected
-                  ? 'bg-ember-500 text-white shadow-sm'
-                  : 'bg-ink-100 text-ink-600 hover:bg-ink-200'
-              }`}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isSelected
+                ? 'bg-ember-500 text-white shadow-sm'
+                : 'bg-ink-100 text-ink-600 hover:bg-ink-200'
+                }`}
             >
               <span>{goal.icon}</span>
               <span>{goal.name}</span>
               {p.total > 0 && (
-                <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-ink-200 text-ink-500'
-                }`}>
+                <span className={`ml-1 text-xs px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-ink-200 text-ink-500'
+                  }`}>
                   {p.percentage}%
                 </span>
               )}
@@ -194,18 +205,16 @@ const SkillTracker = ({ category, careers = [] }) => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.04 }}
                     onClick={() => handleToggle(skill.id)}
-                    className={`flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-200 group ${
-                      completed
-                        ? 'bg-sage-50 border border-sage-200'
-                        : 'bg-ink-50 border border-ink-100 hover:border-ink-200 hover:bg-white'
-                    }`}
+                    className={`flex items-center gap-3 p-3.5 rounded-xl cursor-pointer transition-all duration-200 group ${completed
+                      ? 'bg-sage-50 border border-sage-200'
+                      : 'bg-ink-50 border border-ink-100 hover:border-ink-200 hover:bg-white'
+                      }`}
                   >
                     {/* Checkbox */}
-                    <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all duration-200 border-2 ${
-                      completed
-                        ? 'bg-sage-500 border-sage-500'
-                        : 'border-ink-300 group-hover:border-ember-400'
-                    }`}>
+                    <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all duration-200 border-2 ${completed
+                      ? 'bg-sage-500 border-sage-500'
+                      : 'border-ink-300 group-hover:border-ember-400'
+                      }`}>
                       {completed && (
                         <motion.svg
                           initial={{ scale: 0 }}
@@ -221,9 +230,8 @@ const SkillTracker = ({ category, careers = [] }) => {
 
                     {/* Skill info */}
                     <div className="flex-1 min-w-0">
-                      <span className={`text-sm font-medium transition-colors ${
-                        completed ? 'text-sage-700 line-through' : 'text-ink-800'
-                      }`}>
+                      <span className={`text-sm font-medium transition-colors ${completed ? 'text-sage-700 line-through' : 'text-ink-800'
+                        }`}>
                         {skill.name}
                       </span>
                     </div>

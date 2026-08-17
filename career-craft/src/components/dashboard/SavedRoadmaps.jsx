@@ -13,7 +13,16 @@ const SavedRoadmaps = () => {
   const fetchRoadmaps = async () => {
     if (!user) return
     const data = await getRoadmaps(user.uid)
-    setRoadmaps(data)
+    const unique = []
+    const seen = new Set()
+    for (const r of data) {
+      const norm = (r.title || '').toLowerCase().trim()
+      if (!seen.has(norm)) {
+        seen.add(norm)
+        unique.push(r)
+      }
+    }
+    setRoadmaps(unique)
     setLoading(false)
   }
 

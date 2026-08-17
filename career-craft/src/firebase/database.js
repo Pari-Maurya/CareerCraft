@@ -40,14 +40,14 @@ export const getQuizResult = async (uid) => {
 // ─── Saved Roadmaps ───────────────────────────────────────────────────────────
 
 export const saveRoadmap = async (uid, roadmap) => {
-  const roadmapsRef = ref(db, `roadmaps/${uid}`)
-  const newRef = push(roadmapsRef)
-  await set(newRef, {
+  const sanitizedId = (roadmap.title || 'roadmap').toLowerCase().trim().replace(/[^a-z0-9]+/g, '_')
+  const roadmapRef = ref(db, `roadmaps/${uid}/${sanitizedId}`)
+  await set(roadmapRef, {
     ...roadmap,
-    id: newRef.key,
+    id: sanitizedId,
     savedAt: Date.now(),
   })
-  return newRef.key
+  return sanitizedId
 }
 
 export const getRoadmaps = async (uid) => {

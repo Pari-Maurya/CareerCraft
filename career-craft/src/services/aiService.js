@@ -235,7 +235,7 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
 export const generateRoadmap = async (careerTitle, userCategory) => {
   if (!GEMINI_API_KEY) {
-    // Simulate slight loading delay and return fallback mock roadmap
+    console.log('ℹ️ No VITE_GEMINI_API_KEY found in .env. Using mock roadmap fallback.')
     await new Promise((r) => setTimeout(r, 1000))
     return getMockRoadmap(careerTitle)
   }
@@ -263,7 +263,7 @@ IMPORTANT: Return ONLY a valid JSON object without any markdown code block forma
 Ensure the "steps" array contains exactly 5 detailed phases.`
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${GEMINI_API_KEY.trim()}`,
       {
         method: 'POST',
         headers: {
@@ -284,7 +284,9 @@ Ensure the "steps" array contains exactly 5 detailed phases.`
     )
 
     if (!response.ok) {
-      throw new Error(`Gemini API HTTP Error: ${response.status}`)
+      const errText = await response.text()
+      console.error(`❌ Gemini API Error (${response.status}):`, errText)
+      throw new Error(`Gemini API HTTP Error ${response.status}: ${errText}`)
     }
 
     const data = await response.json()
@@ -293,9 +295,10 @@ Ensure the "steps" array contains exactly 5 detailed phases.`
 
     // Clean JSON response (strip markdown wrappers if present)
     const cleanedText = content.replace(/```json/gi, '').replace(/```/g, '').trim()
+    console.log('✅ Live Gemini AI Roadmap generated successfully!')
     return JSON.parse(cleanedText)
   } catch (err) {
-    console.warn('Gemini API request failed, falling back to mock roadmap:', err)
+    console.error('⚠️ Gemini API request failed:', err)
     return getMockRoadmap(careerTitle)
   }
 }
