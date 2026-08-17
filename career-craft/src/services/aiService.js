@@ -1,7 +1,3 @@
-// src/services/aiService.js
-
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
-
 // ─── Mock Roadmaps ────────────────────────────────────────────────────────────
 
 const mockRoadmaps = {
@@ -233,63 +229,73 @@ const getMockRoadmap = (careerTitle) => {
   }
 }
 
-// ─── OpenAI Integration ───────────────────────────────────────────────────────
+// ─── Gemini LLM Integration ───────────────────────────────────────────────────
+
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
 export const generateRoadmap = async (careerTitle, userCategory) => {
-  if (!OPENAI_API_KEY) {
-    // Simulate loading delay
-    await new Promise((r) => setTimeout(r, 1200))
+  if (!GEMINI_API_KEY) {
+    // Simulate slight loading delay and return fallback mock roadmap
+    await new Promise((r) => setTimeout(r, 1000))
     return getMockRoadmap(careerTitle)
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a career guidance expert helping students plan their career paths. 
-Return ONLY valid JSON. No markdown, no code blocks, no extra text.`,
-          },
-          {
-            role: 'user',
-            content: `Create a detailed career roadmap for a student wanting to become a ${careerTitle} with a ${userCategory} background.
-Return JSON with this exact structure:
+    const prompt = `You are a professional career guidance expert helping students plan their career paths.
+Generate a structured, detailed 5-step career roadmap for a student aspiring to become a "${careerTitle}" in the "${userCategory || 'General'}" domain.
+
+IMPORTANT: Return ONLY a valid JSON object without any markdown code block formatting (do not wrap in \`\`\`json or \`\`\`). The JSON must follow this exact structure:
 {
   "title": "${careerTitle}",
-  "overview": "2-3 sentence overview",
-  "duration": "X–Y months",
+  "overview": "A concise 2-3 sentence overview of this career choice, key responsibilities, and industry outlook.",
+  "duration": "12–18 months",
   "steps": [
     {
-      "phase": "Phase name",
-      "duration": "X–Y months",
-      "title": "Step title",
-      "description": "2-3 sentence description",
-      "resources": ["Resource 1", "Resource 2", "Resource 3"],
-      "milestone": "Concrete milestone to achieve"
+      "phase": "Phase 1: Foundation",
+      "duration": "0–3 months",
+      "title": "Learn Core Fundamentals",
+      "description": "Clear guidance on key concepts and fundamental skills to master.",
+      "resources": ["Course/Resource 1", "Book/Platform 2", "Tool 3"],
+      "milestone": "Concrete project or milestone to achieve."
     }
   ]
 }
-Include exactly 5 steps.`,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 1500,
-      }),
-    })
+Ensure the "steps" array contains exactly 5 detailed phases.`
 
-    if (!response.ok) throw new Error('OpenAI API error')
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048,
+          },
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error(`Gemini API HTTP Error: ${response.status}`)
+    }
 
     const data = await response.json()
-    const content = data.choices[0].message.content
-    return JSON.parse(content)
-  } catch {
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text
+    if (!content) throw new Error('No content returned from Gemini model')
+
+    // Clean JSON response (strip markdown wrappers if present)
+    const cleanedText = content.replace(/```json/gi, '').replace(/```/g, '').trim()
+    return JSON.parse(cleanedText)
+  } catch (err) {
+    console.warn('Gemini API request failed, falling back to mock roadmap:', err)
     return getMockRoadmap(careerTitle)
   }
 }

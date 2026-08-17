@@ -16,19 +16,19 @@ export const useSkills = (uid) => {
     return unsubscribe
   }, [uid])
 
-  const initGoal = useCallback(async (goalId) => {
+  const initGoal = useCallback(async (goalId, skillsList = []) => {
     if (!uid) return
     const goal = skillGoals.find((g) => g.id === goalId)
-    if (!goal) return
+    const skillsToUse = goal ? goal.skills : skillsList
 
     const items = {}
-    goal.skills.forEach((skill) => {
+    skillsToUse.forEach((skill) => {
       items[skill.id] = { completed: false, name: skill.name }
     })
 
     await saveSkillProgress(uid, goalId, {
       goalId,
-      goalName: goal.name,
+      goalName: goal ? goal.name : goalId,
       items,
     })
   }, [uid])
@@ -50,14 +50,14 @@ export const useSkills = (uid) => {
   }, [uid, skillProgress, initGoal])
 
   const getGoalProgress = useCallback((goalId) => {
-    const goal = skillGoals.find((g) => g.id === goalId)
-    if (!goal) return { completed: 0, total: 0, percentage: 0 }
-
     const goalData = skillProgress[goalId]
-    if (!goalData?.items) return { completed: 0, total: goal.skills.length, percentage: 0 }
+    if (!goalData?.items) return { completed: 0, total: 0, percentage: 0 }
 
-    const total = goal.skills.length
-    const completed = goal.skills.filter((s) => goalData.items[s.id]?.completed).length
+    const itemsArray = Object.values(goalData.items)
+    const total = itemsArray.length
+    if (total === 0) return { completed: 0, total: 0, percentage: 0 }
+
+    const completed = itemsArray.filter((item) => item.completed).length
     const percentage = Math.round((completed / total) * 100)
 
     return { completed, total, percentage }

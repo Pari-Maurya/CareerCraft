@@ -175,7 +175,7 @@ const DashboardPage = () => {
             )}
 
             {/* Skill Tracker */}
-            {activeTab === 'skills' && <SkillTracker />}
+            {activeTab === 'skills' && <SkillTracker category={quizResult?.category} careers={careers} />}
 
             {/* Saved Roadmaps */}
             {activeTab === 'roadmaps' && <SavedRoadmaps />}
